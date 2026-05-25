@@ -1,50 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Simple Store</title>
+  <meta charset="UTF-8">
+  <title>Retro Game Hub</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
-    <h1>🛒 My Simple Store</h1>
+<div class="container">
 
-    <!-- Product Selection -->
-    <div class="card">
-      <h2>Select an Article</h2>
+  <!-- MENU -->
+  <div id="menu">
+    <h1>🎮 Retro Game Hub</h1>
+    <p>Choose a game</p>
 
-      <select id="product">
-        <option value="Phone">Smartphone - 500$</option>
-        <option value="Laptop">Laptop - 900$</option>
-        <option value="Headphones">Headphones - 50$</option>
-      </select>
-    </div>
-
-    <!-- Payment Method -->
-    <div class="card">
-      <h2>Choose Payment Method</h2>
-
-      <label><input type="radio" name="pay" checked> Credit Card</label><br>
-      <label><input type="radio" name="pay"> PayPal</label><br>
-      <label><input type="radio" name="pay"> Cash on Delivery</label>
-    </div>
-
-    <!-- Button -->
-    <button onclick="confirmOrder()">Confirm Order</button>
-
-    <!-- Result -->
-    <p id="result"></p>
+    <button onclick="startFlappy()">🐦 Flappy Bird</button>
+    <button onclick="startSnake()">🐍 Snake</button>
   </div>
 
-  <script>
-    function confirmOrder() {
-      const product = document.getElementById("product").value;
-      document.getElementById("result").innerText =
-        "✅ You selected: " + product + " | Order placed (demo only)";
+  <!-- FLAPPY BIRD -->
+  <div id="flappy" class="game hidden">
+    <h2>Flappy Bird (Click to jump)</h2>
+    <canvas id="flappyCanvas" width="300" height="400"></canvas>
+    <br>
+    <button onclick="backMenu()">⬅ Back</button>
+  </div>
+
+  <!-- SNAKE -->
+  <div id="snake" class="game hidden">
+    <h2>Snake Game (Use arrows)</h2>
+    <canvas id="snakeCanvas" width="300" height="300"></canvas>
+    <br>
+    <button onclick="backMenu()">⬅ Back</button>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- MENU ---------------- */
+function startFlappy(){
+  document.getElementById("menu").style.display="none";
+  document.getElementById("flappy").classList.remove("hidden");
+  flappyGame();
+}
+
+function startSnake(){
+  document.getElementById("menu").style.display="none";
+  document.getElementById("snake").classList.remove("hidden");
+  snakeGame();
+}
+
+function backMenu(){
+  location.reload();
+}
+
+/* ---------------- FLAPPY BIRD (simple) ---------------- */
+function flappyGame(){
+  const canvas = document.getElementById("flappyCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let birdY = 150;
+  let velocity = 0;
+  let gravity = 0.5;
+
+  document.addEventListener("click", () => {
+    velocity = -8;
+  });
+
+  function loop(){
+    ctx.clearRect(0,0,300,400);
+
+    velocity += gravity;
+    birdY += velocity;
+
+    // bird
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(50, birdY, 20, 20);
+
+    // ground
+    ctx.fillStyle = "green";
+    ctx.fillRect(0, 380, 300, 20);
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+/* ---------------- SNAKE (simple) ---------------- */
+function snakeGame(){
+  const canvas = document.getElementById("snakeCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let box = 15;
+  let snake = [{x:5*box,y:5*box}];
+  let food = {
+    x: Math.floor(Math.random()*20)*box,
+    y: Math.floor(Math.random()*20)*box
+  };
+
+  let dir = "RIGHT";
+
+  document.addEventListener("keydown", e=>{
+    if(e.key=="ArrowUp") dir="UP";
+    if(e.key=="ArrowDown") dir="DOWN";
+    if(e.key=="ArrowLeft") dir="LEFT";
+    if(e.key=="ArrowRight") dir="RIGHT";
+  });
+
+  function draw(){
+    ctx.clearRect(0,0,300,300);
+
+    // snake
+    for(let i=0;i<snake.length;i++){
+      ctx.fillStyle="lime";
+      ctx.fillRect(snake[i].x,snake[i].y,box,box);
     }
-  </script>
+
+    // food
+    ctx.fillStyle="red";
+    ctx.fillRect(food.x,food.y,box,box);
+
+    let head = {x:snake[0].x,y:snake[0].y};
+
+    if(dir=="RIGHT") head.x+=box;
+    if(dir=="LEFT") head.x-=box;
+    if(dir=="UP") head.y-=box;
+    if(dir=="DOWN") head.y+=box;
+
+    snake.unshift(head);
+
+    if(head.x==food.x && head.y==food.y){
+      food = {
+        x: Math.floor(Math.random()*20)*box,
+        y: Math.floor(Math.random()*20)*box
+      };
+    } else {
+      snake.pop();
+    }
+
+    setTimeout(draw, 120);
+  }
+
+  draw();
+}
+</script>
 
 </body>
 </html>
