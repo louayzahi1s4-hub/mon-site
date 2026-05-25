@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simple Store</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>🛒 My Simple Store</h1>
+
+    <!-- Product Selection -->
+    <div class="card">
+      <h2>Select an Article</h2>
+
+      <select id="product">
+        <option value="Phone">Smartphone - 500$</option>
+        <option value="Laptop">Laptop - 900$</option>
+        <option value="Headphones">Headphones - 50$</option>
+      </select>
+    </div>
+
+    <!-- Payment Method -->
+    <div class="card">
+      <h2>Choose Payment Method</h2>
+
+      <label><input type="radio" name="pay" checked> Credit Card</label><br>
+      <label><input type="radio" name="pay"> PayPal</label><br>
+      <label><input type="radio" name="pay"> Cash on Delivery</label>
+    </div>
+
+    <!-- Button -->
+    <button onclick="confirmOrder()">Confirm Order</button>
+
+    <!-- Result -->
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function confirmOrder() {
+      const product = document.getElementById("product").value;
+      document.getElementById("result").innerText =
+        "✅ You selected: " + product + " | Order placed (demo only)";
+    }
+  </script>
+
+</body>
+</html>
