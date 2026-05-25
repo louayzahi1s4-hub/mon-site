@@ -2,147 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Retro Game Hub</title>
+  <title>Retro Game Hub - Flappy Bird</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
 
-  <!-- MENU -->
-  <div id="menu">
-    <h1>🎮 Retro Game Hub</h1>
-    <p>Choose a game</p>
+  <!-- LEFT MENU -->
+  <div class="menu">
+    <h1>🎮 RETRO GAME HUB</h1>
 
-    <button onclick="startFlappy()">🐦 Flappy Bird</button>
-    <button onclick="startSnake()">🐍 Snake</button>
+    <h2>CHOOSE GAME</h2>
+
+    <button onclick="startGame()">🐦 FLAPPY BIRD</button>
+
+    <p class="hint">SPACE or CLICK to jump</p>
   </div>
 
-  <!-- FLAPPY BIRD -->
-  <div id="flappy" class="game hidden">
-    <h2>Flappy Bird (Click to jump)</h2>
-    <canvas id="flappyCanvas" width="300" height="400"></canvas>
-    <br>
-    <button onclick="backMenu()">⬅ Back</button>
-  </div>
-
-  <!-- SNAKE -->
-  <div id="snake" class="game hidden">
-    <h2>Snake Game (Use arrows)</h2>
-    <canvas id="snakeCanvas" width="300" height="300"></canvas>
-    <br>
-    <button onclick="backMenu()">⬅ Back</button>
+  <!-- GAME AREA -->
+  <div class="game-area">
+    <div class="score">Score: <span id="score">0</span></div>
+    <canvas id="game" width="400" height="600"></canvas>
   </div>
 
 </div>
 
 <script>
-/* ---------------- MENU ---------------- */
-function startFlappy(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("flappy").classList.remove("hidden");
-  flappyGame();
-}
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-function startSnake(){
-  document.getElementById("menu").style.display="none";
-  document.getElementById("snake").classList.remove("hidden");
-  snakeGame();
-}
+let bird = { x: 80, y: 200, velocity: 0 };
+let gravity = 0.5;
+let jump = -8;
 
-function backMenu(){
-  location.reload();
-}
+let pipes = [];
+let score = 0;
+let gameStarted = false;
 
-/* ---------------- FLAPPY BIRD (simple) ---------------- */
-function flappyGame(){
-  const canvas = document.getElementById("flappyCanvas");
-  const ctx = canvas.getContext("2d");
-
-  let birdY = 150;
-  let velocity = 0;
-  let gravity = 0.5;
-
-  document.addEventListener("click", () => {
-    velocity = -8;
-  });
-
-  function loop(){
-    ctx.clearRect(0,0,300,400);
-
-    velocity += gravity;
-    birdY += velocity;
-
-    // bird
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(50, birdY, 20, 20);
-
-    // ground
-    ctx.fillStyle = "green";
-    ctx.fillRect(0, 380, 300, 20);
-
-    requestAnimationFrame(loop);
-  }
-
+/* START GAME */
+function startGame(){
+  if(gameStarted) return;
+  gameStarted = true;
   loop();
 }
 
-/* ---------------- SNAKE (simple) ---------------- */
-function snakeGame(){
-  const canvas = document.getElementById("snakeCanvas");
-  const ctx = canvas.getContext("2d");
+/* CONTROLS */
+document.addEventListener("keydown", e => {
+  if(e.code === "Space") bird.velocity = jump;
+});
 
-  let box = 15;
-  let snake = [{x:5*box,y:5*box}];
-  let food = {
-    x: Math.floor(Math.random()*20)*box,
-    y: Math.floor(Math.random()*20)*box
-  };
+document.addEventListener("click", () => {
+  bird.velocity = jump;
+});
 
-  let dir = "RIGHT";
+/* CREATE PIPES */
+function createPipe(){
+  let gap = 140;
+  let top = Math.random() * 300 + 50;
 
-  document.addEventListener("keydown", e=>{
-    if(e.key=="ArrowUp") dir="UP";
-    if(e.key=="ArrowDown") dir="DOWN";
-    if(e.key=="ArrowLeft") dir="LEFT";
-    if(e.key=="ArrowRight") dir="RIGHT";
+  pipes.push({
+    x: 400,
+    top: top,
+    bottom: top + gap
+  });
+}
+
+/* GAME LOOP */
+function loop(){
+
+  ctx.clearRect(0,0,400,600);
+
+  /* SKY */
+  ctx.fillStyle = "#70c5ce";
+  ctx.fillRect(0,0,400,600);
+
+  /* BIRD */
+  bird.velocity += gravity;
+  bird.y += bird.velocity;
+
+  ctx.fillStyle = "yellow";
+  ctx.fillRect(bird.x, bird.y, 20, 20);
+
+  /* PIPES */
+  ctx.fillStyle = "green";
+
+  pipes.forEach((p,i) => {
+    p.x -= 2;
+
+    ctx.fillRect(p.x, 0, 60, p.top);
+    ctx.fillRect(p.x, p.bottom, 60, 600);
+
+    /* COLLISION */
+    if(
+      bird.x < p.x + 60 &&
+      bird.x + 20 > p.x &&
+      (bird.y < p.top || bird.y > p.bottom)
+    ){
+      alert("Game Over! Score: " + score);
+      location.reload();
+    }
+
+    /* SCORE */
+    if(p.x === 60){
+      score++;
+      document.getElementById("score").innerText = score;
+    }
   });
 
-  function draw(){
-    ctx.clearRect(0,0,300,300);
-
-    // snake
-    for(let i=0;i<snake.length;i++){
-      ctx.fillStyle="lime";
-      ctx.fillRect(snake[i].x,snake[i].y,box,box);
-    }
-
-    // food
-    ctx.fillStyle="red";
-    ctx.fillRect(food.x,food.y,box,box);
-
-    let head = {x:snake[0].x,y:snake[0].y};
-
-    if(dir=="RIGHT") head.x+=box;
-    if(dir=="LEFT") head.x-=box;
-    if(dir=="UP") head.y-=box;
-    if(dir=="DOWN") head.y+=box;
-
-    snake.unshift(head);
-
-    if(head.x==food.x && head.y==food.y){
-      food = {
-        x: Math.floor(Math.random()*20)*box,
-        y: Math.floor(Math.random()*20)*box
-      };
-    } else {
-      snake.pop();
-    }
-
-    setTimeout(draw, 120);
+  /* REMOVE OLD PIPES */
+  if(pipes.length === 0 || pipes[pipes.length-1].x < 200){
+    createPipe();
   }
 
-  draw();
+  /* FLOOR / CEILING */
+  if(bird.y > 580 || bird.y < 0){
+    alert("Game Over! Score: " + score);
+    location.reload();
+  }
+
+  requestAnimationFrame(loop);
 }
 </script>
 
